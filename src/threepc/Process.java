@@ -45,6 +45,9 @@ public class Process {
 	// Die after information.
 	List<Integer> dieAfter = new ArrayList<Integer>();
 	
+	// Send Partial commit messages to only a few process.
+	List<Integer> partialCommit = new ArrayList<Integer>();
+	
 	Process(int processId, String configPath) {
 		this.configPath = System.getProperty("CONFIG_PATH");
 		this.processId = processId;
@@ -64,14 +67,6 @@ public class Process {
 
 		this.queue = new Queue<String>();
 		this.controller = new NetController(this.processId, this.config, this.queue);
-
-		String deathAfterString = System.getProperty("DeathAfter");
-		
-		// ProcessID.
-		dieAfter.add(Integer.parseInt(deathAfterString.split("=")[1]));
-		
-		// After N-messages from ProcessID kill the process.
-		dieAfter.add(Integer.parseInt(deathAfterString.split("=")[0]));
 	}
 	
 	
