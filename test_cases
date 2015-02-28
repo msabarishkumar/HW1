@@ -1,2 +1,11 @@
 TEST CASES:
-<List down the test cases here>
+partial commit
+partial precommit
+participant failure [and recovery]
+total failure
+cascading failure
+the next leader has already failed
+precommit why log case 
+no failure
+coordinator failure (after the coordinator failure it no longer acts as coordinator once it recovers)
+can there be multiple total failures?
