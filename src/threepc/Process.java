@@ -16,6 +16,9 @@ import framework.Config;
 import framework.NetController;
 
 public class Process {
+	
+	public static boolean enableDebug = true;
+	
 	// Interval after which a process would send isAlive messages. 
 	final int HEART_BEAT_PERIOD = 1000;
 	
@@ -29,7 +32,7 @@ public class Process {
 	final ConcurrentLinkedQueue<String> queue;
 
 	// Current process Id.
-	int processId;
+	public int processId;
 
 	// Manage your connections.
 	NetController controller;
@@ -38,7 +41,7 @@ public class Process {
 	Playlist playlist;
 
 	// Map of the UP Processes. ProcessId to time last updated.
-	Map<Integer, Long> upProcess;
+	public Map<Integer, Long> upProcess;
 
 	// Identifier of the coordinator. 
 	int coordinatorNumber;
