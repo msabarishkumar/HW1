@@ -166,25 +166,6 @@ public class CoordinatorTransaction extends Transaction {
 		}
 		lock.unlock();
 	}
-	
-	private void dieIfNMessagesReceived() {
-		if(process.dieAfter.size() < 2) {
-			return ;
-		}
-		
-		int pidToWaitFor = process.dieAfter.get(0);
-		int numMsg = process.dieAfter.get(1);
-		
-		if (pidToWaitFor == message.process_id) {
-			numMsg = numMsg - 1;
-			if (numMsg == 0) {
-				process.config.logger.info("Received n messages from: " + message.process_id);
-				process.config.logger.warning("Killing  myself");
-				System.exit(1);
-			}
-			process.dieAfter.set(1, numMsg);
-		}
-	}
 		
 	public void update(Message message) {
 		lock.lock();

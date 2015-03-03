@@ -268,7 +268,7 @@ public class Transaction implements Runnable {
 		lock.unlock();
 	}
 
-	private void dieIfNMessagesReceived() {
+	protected void dieIfNMessagesReceived() {
 		if(process.dieAfter.size() < 2) {
 			return ;
 		}
