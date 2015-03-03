@@ -253,7 +253,7 @@ public class Transaction implements Runnable {
 						}
 						if (stateRequestResponseReceived == false) {
 							lock.lock();
-							process.config.logger.info("Going to reelect the cordinator because no response is received after sending TransactionState.");
+							process.config.logger.info("Going to reelect the cordinator.");
 							electCordinator();
 							lock.unlock();
 						}
