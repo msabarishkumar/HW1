@@ -11,6 +11,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 
 import playlist.Playlist;
+import util.DTLog;
 import util.Queue;
 import framework.Config;
 import framework.NetController;
@@ -54,6 +55,9 @@ public class Process {
 	
 	// Send Partial commit messages to only a few process.
 	List<Integer> partialCommit = new ArrayList<Integer>();
+	
+	// Logger.
+	DTLog dtLog;
 	
 	Process(int processId, String configPath) {
 		this.configPath = System.getProperty("CONFIG_PATH");
@@ -143,5 +147,13 @@ public class Process {
 		};
 
 		th.start();
+	}
+	
+	public void notifyTransactionComplete() {
+		
+	}
+	
+	public static void waitTillDelay() {
+		
 	}
 }

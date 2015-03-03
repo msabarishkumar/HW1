@@ -114,8 +114,8 @@ public class DTLog {
 		String msg = msg_splits[2];
 		
 		if (msg != null) {
-			if (msg.equals(TransactionState.JUST_BOOTED.toString())) {
-				return TransactionState.JUST_BOOTED;
+			if (msg.equals(TransactionState.STARTING.toString())) {
+				return TransactionState.STARTING;
 			} else if (msg.equals(TransactionState.UNCERTAIN.toString())) {
 				return TransactionState.UNCERTAIN;
 			} else if (msg.equals(TransactionState.ABORT.toString())) {
