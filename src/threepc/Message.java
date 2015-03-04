@@ -1,7 +1,7 @@
 package threepc;
 
 public class Message {
-	public static final String SEPARATOR = "";
+	public static final String SEPARATOR = "--";
 
 	public final MessageType type;
 	public final int process_id;
@@ -29,9 +29,9 @@ public class Message {
 	public String toString() {
 		StringBuilder value = new StringBuilder();
 		value.append(this.process_id);
-		value.append(this.SEPARATOR);
+		value.append(Message.SEPARATOR);
 		value.append(this.type);
-		value.append(this.SEPARATOR);
+		value.append(Message.SEPARATOR);
 		value.append(this.payLoad);
 
 		return value.toString();
