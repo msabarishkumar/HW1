@@ -1,0 +1,4 @@
+fail0=BEFORE_SEND
+message0=ACK
+fail1=AFTER_DELIVER
+counter1=2
