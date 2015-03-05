@@ -1,5 +1,8 @@
 package threepc;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -100,7 +103,7 @@ public class Process {
 	}
 	
 	public static void main(String[] args) {
-		Process proc = new Process(0);
+		Process proc = new Process(Integer.parseInt(args[0]));
 		
 		proc.pumpHeartBeat();
 		
@@ -109,6 +112,58 @@ public class Process {
 		proc.processMsgQueue();
 		
 		proc.syncUpProcess();
+		
+		proc.processCommandLine();
+	}
+	
+	private void processCommandLine() {
+		Thread th = new Thread() {
+			public void run() {
+				while(true) {
+					BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+				       
+					try {
+						String s = br.readLine();
+						
+						if(s.startsWith("ADD:")) {
+							Message msg = new Message(processId, MessageType.ADD, s.split(":")[1]);
+							controller.sendMsg(processId, msg.toString());
+						} if(s.startsWith("DELETE:")) {
+							Message msg = new Message(processId, MessageType.DELETE, s.split(":")[1]);
+							controller.sendMsg(processId, msg.toString());
+						} if(s.startsWith("EDIT:")) {
+							Message msg = new Message(processId, MessageType.EDIT, s.split(":")[1]);
+							controller.sendMsg(processId, msg.toString());
+						} else if (s.startsWith("EXIT")) {	
+							upProcess.remove(processId);
+							dtLog.write(currentTransaction.getState(), currentTransaction.command);
+							System.exit(1);
+						} else if (s.startsWith("PRINTLOG")){
+							if (currentTransaction == null) {
+								System.out.println("No transaction is going on.");
+							} else {
+								System.out.println("STATE is " + currentTransaction.state);
+							}
+
+							System.out.println("Current Playlist contains: \n");
+							Map<String, String>  songs = playlist.clone();
+							if (!songs.isEmpty()) {
+								for(String song : songs.keySet()) {
+									System.out.println(song + " : " + songs.get(song));
+								}
+							} else {
+								System.out.println("No Songs");
+							}
+						}
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+
+				}
+			}
+		};
+
+		th.start();
 	}
 	
 	// the return value indicates if the process is recovering or not.
@@ -346,10 +401,12 @@ public class Process {
 					}
 					case DIE: {
 						// Also remove the coordinator from upProcess map and then die.
-						config.logger.warning("Received: " + message.toString());
-						upProcess.remove(message.process_id);
-						dtLog.write(currentTransaction.getState(), currentTransaction.command);
-						System.exit(1);
+						synchronized (Process.class) {
+							config.logger.warning("Received: " + message.toString());
+							upProcess.remove(message.process_id);
+							dtLog.write(currentTransaction.getState(), currentTransaction.command);
+							System.exit(1);
+						}
 					}
 					case GIVE_COORDINATOR: {
 						config.logger.info("Received: " + message.toString());
