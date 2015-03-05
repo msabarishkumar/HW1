@@ -9,7 +9,7 @@ public class Playlist {
 	public Playlist() {
 	}
 	
-	public Playlist(Map<String, String> songToURLMap) {
+	public Playlist(HashMap<String, String> songToURLMap) {
 		this.songToURLMap = songToURLMap;
 	}
 	
