@@ -17,7 +17,7 @@ public class CoordinatorTransaction extends Transaction {
 		positiveResponseSet = new HashSet<Integer>();
 		
 		this.BUFFER_TIMEOUT = 2000;
-		this.DECISION_TIMEOUT = process.delay + this.BUFFER_TIMEOUT;
+		this.DECISION_TIMEOUT = Process.delay + this.BUFFER_TIMEOUT;
 	}
 	
 	public TransactionState getState()
@@ -42,9 +42,9 @@ public class CoordinatorTransaction extends Transaction {
 				// Start a new transaction.
 				Message msg = new Message(process.processId, MessageType.VOTE_REQ, command);
 				processWaitSet.addAll(process.upProcess.keySet());
-				process.config.logger.info("Received: " + message.toString());
+				Process.config.logger.info("Received: " + message.toString());
 				Process.waitTillDelay();
-				process.config.logger.info("Sending VOTE_REQs.");
+				Process.config.logger.info("Sending VOTE_REQs.");
 				process.controller.sendMsgs(processWaitSet, msg.toString(), -1);
 				
 				// Timeout if all the process don't reply back with a Yes or No.
@@ -69,20 +69,20 @@ public class CoordinatorTransaction extends Transaction {
 			}
 			else if (state == TransactionState.WAIT_DECISION) {
 				if (message.type == MessageType.YES) {
-					process.config.logger.info("Received: " + message.toString());
+					Process.config.logger.info("Received: " + message.toString());
 					processWaitSet.remove(message.process_id);
 					positiveResponseSet.add(message.process_id);
 					if (processWaitSet.size() == 0) {
-						process.config.logger.info("Successfully got all the YES replies.");
+						Process.config.logger.info("Successfully got all the YES replies.");
 					}
 				} else if (message.type == MessageType.NO) {
-					process.config.logger.info("Received: " + message.toString());
+					Process.config.logger.info("Received: " + message.toString());
 					abortFlag = true;
 					processWaitSet.remove(message.process_id);
-					process.config.logger.info("Got a no from " + message.process_id);
+					Process.config.logger.info("Got a no from " + message.process_id);
 					reasonToAbort = "Process " + message.process_id + " sent a NO !!";
 				} else {
-					process.config.logger.warning("Co-ordinator was waiting for YES/NO." + 
+					Process.config.logger.warning("Co-ordinator was waiting for YES/NO." + 
 							" However got a " + message.type + ".");
 					break;
 				}
@@ -97,9 +97,9 @@ public class CoordinatorTransaction extends Transaction {
 					processWaitSet = positiveResponseSet;
 					positiveResponseSet = new HashSet<Integer>();
 
-					process.config.logger.info("Received Yes from all the processes");
+					Process.config.logger.info("Received Yes from all the processes");
 					Process.waitTillDelay();
-					process.config.logger.info("Sending PRE_COMMIT to all the processes.");
+					Process.config.logger.info("Sending PRE_COMMIT to all the processes.");
 					
 					int partial_count = -1;
 					if (!System.getProperty("PartialPreCommit").equals("-1")) {
@@ -129,25 +129,25 @@ public class CoordinatorTransaction extends Transaction {
 			} 
 			else if (state == TransactionState.WAIT_ACK) {
 				if (message.type != MessageType.ACK) {
-					process.config.logger.warning("Co-ordinator was waiting for Acknowledgement." + 
+					Process.config.logger.warning("Co-ordinator was waiting for Acknowledgement." + 
 							" However got a " + message.type + ".");
 					break;
 				}
-				process.config.logger.info("Received: " + message.toString());
+				Process.config.logger.info("Received: " + message.toString());
 				processWaitSet.remove(message.process_id);
 				positiveResponseSet.add(message.process_id);
 				if (processWaitSet.size() == 0) {
-					process.config.logger.info("Successfully got all the acknowledgements.");
+					Process.config.logger.info("Successfully got all the acknowledgements.");
 				}
 			}
 			else if (state == TransactionState.ACK_RECEIVED) {
 				Message msg = new Message(process.processId, MessageType.COMMIT, command);
 				process.dtLog.write(TransactionState.COMMIT, command);
 				state = TransactionState.COMMIT;
-				process.config.logger.info("Acknowledgments have been received.");
+				Process.config.logger.info("Acknowledgments have been received.");
 				process.notifyTransactionComplete();
 				Process.waitTillDelay();
-				process.config.logger.info("Sending COMMIT message to processes from which received ACK.");
+				Process.config.logger.info("Sending COMMIT message to processes from which received ACK.");
 				
 				int partial_count = -1;
 				if (!System.getProperty("PartialCommit").equals("-1")) {
@@ -181,11 +181,11 @@ public class CoordinatorTransaction extends Transaction {
 	public void abortTransaction() {
 		process.dtLog.write(TransactionState.ABORT, command);
 		state = TransactionState.ABORT;
-		process.config.logger.warning("Transaction aborted: " + reasonToAbort);
+		Process.config.logger.warning("Transaction aborted: " + reasonToAbort);
 		process.notifyTransactionComplete();
 		Message msg = new Message(process.processId, MessageType.ABORT, command);
 		Process.waitTillDelay();
-		process.config.logger.info("Sending Abort messages to all the process.");
+		Process.config.logger.info("Sending Abort messages to all the process.");
 		process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), -1);
 		
 		processWaitSet.clear();

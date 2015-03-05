@@ -36,7 +36,7 @@ public class Transaction implements Runnable {
 		this.message = message;
 		
 		this.BUFFER_TIMEOUT = 4000;
-		this.DECISION_TIMEOUT = process.delay + this.BUFFER_TIMEOUT;
+		this.DECISION_TIMEOUT = Process.delay + this.BUFFER_TIMEOUT;
 	}
 
 	public TransactionState getState() {
@@ -61,25 +61,25 @@ public class Transaction implements Runnable {
 					process.dtLog.write(TransactionState.ABORT, command);
 					state = TransactionState.ABORT;
 					process.notifyTransactionComplete();
-					process.config.logger.warning("Transaction aborted.");
+					Process.config.logger.warning("Transaction aborted.");
 					
 					if (sendAbort) {
-						process.config.logger.info("Received: " + message.toString());
+						Process.config.logger.info("Received: " + message.toString());
 						Message msg = new Message(process.processId, MessageType.NO, " ");
 						Process.waitTillDelay();
-						process.config.logger.info("Sending No.");
+						Process.config.logger.info("Sending No.");
 						process.controller.sendMsg(process.coordinatorNumber, msg.toString());
 					}
 					break;
 				} else {
 					process.dtLog.write(TransactionState.UNCERTAIN, command);
 					state = TransactionState.UNCERTAIN;
-					process.config.logger.info("Received: "	+ message.toString());
+					Process.config.logger.info("Received: "	+ message.toString());
 					Message msg = new Message(process.processId, MessageType.YES, " ");
 					Process.waitTillDelay();
-					process.config.logger.info("Sending Yes.");
+					Process.config.logger.info("Sending Yes.");
 					process.controller.sendMsg(process.coordinatorNumber, msg.toString());
-					process.config.logger.info("Waiting to receive either PRE_COMMIT or ABORT.");
+					Process.config.logger.info("Waiting to receive either PRE_COMMIT or ABORT.");
 
 					// Timeout if coordinator doesn't say anything.
 					Thread th = new Thread() {
@@ -91,7 +91,7 @@ public class Transaction implements Runnable {
 							}
 							lock.lock();
 							if (state == TransactionState.UNCERTAIN) {
-								process.config.logger.warning("Did not receive either PRE_COMMIT or ABORT from coordinator. It must be dead.");
+								Process.config.logger.warning("Did not receive either PRE_COMMIT or ABORT from coordinator. It must be dead.");
 								electCordinator();
 							}
 							lock.unlock();
@@ -105,17 +105,17 @@ public class Transaction implements Runnable {
 					process.dtLog.write(TransactionState.ABORT, command);
 					state = TransactionState.ABORT;
 					process.notifyTransactionComplete();
-					process.config.logger.info("Transaction aborted. Co-ordinator sent an abort.");
+					Process.config.logger.info("Transaction aborted. Co-ordinator sent an abort.");
 					break;
 				} else if (message.type == MessageType.PRE_COMMIT) {
 					stateRequestResponseReceived = true;
-					process.config.logger.info("Received: " + message.toString());
-					process.config.logger.info("Updated state to COMMITABLE.");
+					Process.config.logger.info("Received: " + message.toString());
+					Process.config.logger.info("Updated state to COMMITABLE.");
 					state = TransactionState.COMMITABLE;
 
 					Message msg = new Message(process.processId, MessageType.ACK, " ");
 					Process.waitTillDelay();
-					process.config.logger.info("Sending Acknowledgment.");
+					Process.config.logger.info("Sending Acknowledgment.");
 					process.controller.sendMsg(process.coordinatorNumber, msg.toString());
 
 					Thread th = new Thread() {
@@ -127,7 +127,7 @@ public class Transaction implements Runnable {
 							}
 							lock.lock();
 							if (state == TransactionState.COMMITABLE) {
-								process.config.logger.warning("Did not receive COMMIT from the coordinator. It must be dead.");
+								Process.config.logger.warning("Did not receive COMMIT from the coordinator. It must be dead.");
 								electCordinator();
 							}
 							lock.unlock();
@@ -135,20 +135,20 @@ public class Transaction implements Runnable {
 					};
 					th.start();
 				} else {
-					process.config.logger.warning("Was expecting either an ABORT or PRE_COMMIT." + "However, received a: " + message.type);
+					Process.config.logger.warning("Was expecting either an ABORT or PRE_COMMIT." + "However, received a: " + message.type);
 					break;
 				}
 			} else if (state == TransactionState.COMMITABLE) {
-				process.config.logger.info("Received: " + message.toString());
+				Process.config.logger.info("Received: " + message.toString());
 				if (message.type == MessageType.COMMIT) {
 					stateRequestResponseReceived = true;
 					process.dtLog.write(TransactionState.COMMIT, command);
 					state = TransactionState.COMMIT;
-					process.config.logger.info("Transaction Committed.");
+					Process.config.logger.info("Transaction Committed.");
 					process.notifyTransactionComplete();
 					break; // STOP THE LOOP
 				} else {
-					process.config.logger .warning("Was expecting only a COMMIT message." + "However, received a: " + message.type);
+					Process.config.logger .warning("Was expecting only a COMMIT message." + "However, received a: " + message.type);
 					break;
 				}
 			}
@@ -175,16 +175,16 @@ public class Transaction implements Runnable {
 		int temp = process.coordinatorNumber;
 		while ((keys[0] - temp) > 1) {
 			temp = temp + 1;
-			process.config.logger.info("As per round robin, Selecting: " + temp);
-			process.config.logger.info("Discarding: " + temp + ", as it is down.");
+			Process.config.logger.info("As per round robin, Selecting: " + temp);
+			Process.config.logger.info("Discarding: " + temp + ", as it is down.");
 		}
 
-		process.config.logger.info("Elected new coordinator: " + keys[0]);
+		Process.config.logger.info("Elected new coordinator: " + keys[0]);
 
 		// Sending UR_SELECTED message to the new coordinator.
 		Message msg = new Message(process.processId, MessageType.UR_SELECTED, command);
 		Process.waitTillDelay();
-		process.config.logger.info("Sending: " + msg + " to: " + keys[0]);
+		Process.config.logger.info("Sending: " + msg + " to: " + keys[0]);
 		process.controller.sendMsg(keys[0], msg.toString());
 
 		// If I am not the elected coordinator then update the new coordinator
@@ -202,7 +202,7 @@ public class Transaction implements Runnable {
 					}
 					if (!stateRequestReceived) {
 						lock.lock();
-						process.config.logger.info("Reelect coordinator.");
+						Process.config.logger.info("Reelect coordinator.");
 						electCordinator();
 						lock.unlock();
 					}
@@ -231,14 +231,14 @@ public class Transaction implements Runnable {
 		if (message.type == MessageType.STATE_REQ) {
 			stateRequestReceived = true;
 			process.coordinatorNumber = message.process_id;
-			process.config.logger.info("Received: " + message.toString());
+			Process.config.logger.info("Received: " + message.toString());
 			Process.waitTillDelay();
 			if (state == TransactionState.STARTING) {
 				state = TransactionState.ABORT;
 			}
 			
 			Message response = new Message(process.processId, MessageType.STATE_VALUE, state.toString());
-			process.config.logger.info("Sending: " + response.toString());
+			Process.config.logger.info("Sending: " + response.toString());
 			stateRequestResponseReceived = false;
 			process.controller.sendMsg(message.process_id, response.toString());
 
@@ -253,7 +253,7 @@ public class Transaction implements Runnable {
 						}
 						if (stateRequestResponseReceived == false) {
 							lock.lock();
-							process.config.logger.info("Going to reelect the cordinator.");
+							Process.config.logger.info("Going to reelect the cordinator.");
 							electCordinator();
 							lock.unlock();
 						}
@@ -279,11 +279,15 @@ public class Transaction implements Runnable {
 		if (pidToWaitFor == message.process_id) {
 			numMsg = numMsg - 1;
 			if (numMsg == 0) {
-				process.config.logger.info("Received n messages from: " + message.process_id);
-				process.config.logger.warning("Killing  myself");
+				Process.config.logger.info("Received n messages from: " + message.process_id);
+				Process.config.logger.warning("Killing  myself");
 				System.exit(1);
 			}
 			process.dieAfter.set(1, numMsg);
 		}
+	}
+	
+	public String getUpStates() {
+		return "";
 	}
 }

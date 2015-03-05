@@ -21,7 +21,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 		this.recoveryState = TransactionState.STARTING;
 
 		this.BUFFER_TIMEOUT = 2000;
-		this.DECISION_TIMEOUT = process.delay + this.BUFFER_TIMEOUT;
+		this.DECISION_TIMEOUT = Process.delay + this.BUFFER_TIMEOUT;
 	}
 
 	public TransactionState getState() {
@@ -41,7 +41,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 
 				Message msg = new Message(process.processId, MessageType.STATE_REQ, command);
 				Process.waitTillDelay();
-				process.config.logger.info("Sending: " + msg);
+				Process.config.logger.info("Sending: " + msg);
 				process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), -1);
 
 				Thread th = new Thread() {
@@ -70,7 +70,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 			}
 			else if (recoveryState == TransactionState.WAIT_DECISION) {
 				if (message.type == MessageType.STATE_VALUE) {
-					process.config.logger.info("Recieved: " + message.toString());
+					Process.config.logger.info("Recieved: " + message.toString());
 					if (message.payLoad.equals(TransactionState.COMMIT.toString())) {
 						commitFlag = true;
 					} else if (message.payLoad.equals(TransactionState.ABORT.toString())) {
@@ -80,20 +80,20 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 					} else if (message.payLoad.equals(TransactionState.UNCERTAIN.toString())) {
 						uncertainSet.add(message.process_id);
 					} else {
-						process.config.logger.warning("Unexpected State = " + message.payLoad + " received from: " + message.process_id);
+						Process.config.logger.warning("Unexpected State = " + message.payLoad + " received from: " + message.process_id);
 						break;
 					}
 				} else {
-					process.config.logger.warning("Was expecting a STATE value and got: " + message.toString());
+					Process.config.logger.warning("Was expecting a STATE value and got: " + message.toString());
 					break;
 				}
 			} else if (recoveryState == TransactionState.DECISION_RECEIVED) {
 				if (commitFlag && abortFlag) {
-					process.config.logger.warning("ALERT !! SOMETHING IS WRONG. 3-PC has failed.");
+					Process.config.logger.warning("ALERT !! SOMETHING IS WRONG. 3-PC has failed.");
 					break;
 				}
 				if (commitFlag) {
-					process.config.logger.info("Some process has already committed. Let us all commit.");
+					Process.config.logger.info("Some process has already committed. Let us all commit.");
 					if (state != TransactionState.COMMIT) {
 						process.dtLog.write(TransactionState.COMMIT, command);
 						state = TransactionState.COMMIT;
@@ -102,7 +102,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 					Process.waitTillDelay();
 					isRecoveryComplete = true;
 					Message msg = new Message(process.processId,MessageType.COMMIT, command);
-					process.config.logger.info("Sending COMMIT to all the active processes.");
+					Process.config.logger.info("Sending COMMIT to all the active processes.");
 
 					int partial_count = -1;
 					if (!System.getProperty("PartialCommit").equals("-1")) {
@@ -111,7 +111,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 					process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), partial_count);
 					break;
 				} else if (abortFlag) {
-					process.config.logger.info("Some process has already aborted. Let us all abort.");
+					Process.config.logger.info("Some process has already aborted. Let us all abort.");
 					if (state != TransactionState.ABORT) {
 						process.dtLog.write(TransactionState.ABORT, command);
 						state = TransactionState.ABORT;
@@ -120,27 +120,27 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 					Process.waitTillDelay();
 					isRecoveryComplete = true;
 					Message msg = new Message(process.processId, MessageType.ABORT, command);
-					process.config.logger.info("Sending ABORT to all the active processes.");
+					Process.config.logger.info("Sending ABORT to all the active processes.");
 					process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), -1);
 					break;
 				} else if (committableSet.size() == 0) {
-					process.config.logger.info("All the process are uncertain. Let us all abort.");
+					Process.config.logger.info("All the process are uncertain. Let us all abort.");
 					Process.waitTillDelay();
 					process.dtLog.write(TransactionState.ABORT, command);
 					state = TransactionState.ABORT;
 					isRecoveryComplete = true;
 					Message msg = new Message(process.processId, MessageType.ABORT, command);
-					process.config.logger.info("Sending ABORT to all the active processes.");
+					Process.config.logger.info("Sending ABORT to all the active processes.");
 					process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), -1);
 					process.notifyTransactionComplete();
 					break;
 				} else {
 					recoveryState = TransactionState.WAIT_ACK;
-					process.config.logger.info("Some process may be uncertain and some are committable.");
+					Process.config.logger.info("Some process may be uncertain and some are committable.");
 					Process.waitTillDelay();
 					state = TransactionState.COMMITABLE;
 					Message msg = new Message(process.processId,MessageType.PRE_COMMIT, command);
-					process.config.logger.info("Sending PRE_COMMIT to uncertain processes.");
+					Process.config.logger.info("Sending PRE_COMMIT to uncertain processes.");
 
 					int partial_count = -1;
 					process.controller.sendMsgs(uncertainSet, msg.toString(), partial_count);
@@ -163,20 +163,20 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 				}
 			} else if (recoveryState == TransactionState.WAIT_ACK) {
 				if (message.type == MessageType.ACK) {
-					process.config.logger.info("Received: " + message.toString());
+					Process.config.logger.info("Received: " + message.toString());
 					ackSet.add(message.process_id);
 				} else {
-					process.config.logger .warning("Was expecting a ACK and got: "	+ message.toString());
+					Process.config.logger .warning("Was expecting a ACK and got: "	+ message.toString());
 					break;
 				}
 			} else if (recoveryState == TransactionState.ACK_RECEIVED) {
-				process.config.logger.info("COMMIT");
+				Process.config.logger.info("COMMIT");
 				process.dtLog.write(TransactionState.COMMIT, command);
 				state = TransactionState.COMMIT;
 				isRecoveryComplete = true;
 				Message msg = new Message(process.processId, MessageType.COMMIT, command);
 				Process.waitTillDelay();
-				process.config.logger.info("Sending COMMIT to all the active processes.");
+				Process.config.logger.info("Sending COMMIT to all the active processes.");
 				process.notifyTransactionComplete();
 
 				int partial_count = -1;

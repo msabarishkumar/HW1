@@ -29,9 +29,9 @@ public class Message {
 	public String toString() {
 		StringBuilder value = new StringBuilder();
 		value.append(this.process_id);
-		value.append(Message.SEPARATOR);
+		value.append(SEPARATOR);
 		value.append(this.type);
-		value.append(Message.SEPARATOR);
+		value.append(SEPARATOR);
 		value.append(this.payLoad);
 
 		return value.toString();

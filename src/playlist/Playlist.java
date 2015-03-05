@@ -6,14 +6,14 @@ import java.util.HashMap;
 public class Playlist {
 	private Map<String, String> songToURLMap = new HashMap<String, String>();
 
+	public boolean containsKey(String key) {
+		return songToURLMap.containsKey(key.trim());
+	}
+	
 	public boolean addSong(String song, String url) {
-		if (!songToURLMap.containsKey(song)) {
-			songToURLMap.put(song, url);
-
-			return true;
-		}
-
-		return false;
+		songToURLMap.put(song, url);
+		
+		return true;
 	}
 
 	public boolean removeSong(String song) {
@@ -36,13 +36,13 @@ public class Playlist {
 		}
 	}
 
-	public Playlist clone() {
+	public Map<String, String> clone() {
 		Playlist newPlaylist = new Playlist();
 		for (String song : songToURLMap.keySet()) {
 			newPlaylist.addSong(song, songToURLMap.get(song));
 		}
 
-		return newPlaylist;
+		return newPlaylist.songToURLMap;
 	}
 	
 	public String toString() {
