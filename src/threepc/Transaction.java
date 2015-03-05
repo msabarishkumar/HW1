@@ -165,17 +165,21 @@ public class Transaction implements Runnable {
 
 	private void electCordinator() {
 		stateRequestReceived = false;
-		Integer[] keys = (Integer[]) process.upProcess.keySet().toArray(new Integer[0]);
-		Arrays.sort(keys);
-
-		if(keys.length == 0) {
-			return ;
+		
+		Integer[] keys = new Integer[process.upProcess.keySet().size() + 1]; 
+		keys[0] = process.processId;
+		
+		int counter = 1;
+		for(Integer x : process.upProcess.keySet()) {
+			keys[counter++] =  x;
 		}
+		
+		Arrays.sort(keys);
 		
 		if (keys[0] > process.processId) {
 			keys[0] = process.processId;
 		}
-
+		
 		int temp = process.coordinatorNumber;
 		while ((keys[0] - temp) > 1) {
 			temp = temp + 1;
