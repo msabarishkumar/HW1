@@ -1,4 +1,4 @@
-NumProcesses=4
+NumProcesses=1
 port0=4000
 host0=localhost
 port1=4001
