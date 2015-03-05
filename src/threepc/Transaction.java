@@ -57,6 +57,8 @@ public class Transaction implements Runnable {
 				dieIfNMessagesReceived();
 				
 				process.dtLog.write(TransactionState.STARTING, command);
+				System.out.println("Starting the transaction");
+				
 				if (!decision) {
 					process.dtLog.write(TransactionState.ABORT, command);
 					state = TransactionState.ABORT;
@@ -74,10 +76,12 @@ public class Transaction implements Runnable {
 				} else {
 					process.dtLog.write(TransactionState.UNCERTAIN, command);
 					state = TransactionState.UNCERTAIN;
+					System.out.println("Received: "	+ message.toString());
 					Process.config.logger.info("Received: "	+ message.toString());
 					Message msg = new Message(process.processId, MessageType.YES, " ");
 					Process.waitTillDelay();
 					Process.config.logger.info("Sending Yes.");
+					System.out.println("Sending Yes");
 					process.controller.sendMsg(process.coordinatorNumber, msg.toString());
 					Process.config.logger.info("Waiting to receive either PRE_COMMIT or ABORT.");
 
@@ -111,9 +115,11 @@ public class Transaction implements Runnable {
 					stateRequestResponseReceived = true;
 					Process.config.logger.info("Received: " + message.toString());
 					Process.config.logger.info("Updated state to COMMITABLE.");
+					System.out.println("Updated state to COMMITABLE.");
 					state = TransactionState.COMMITABLE;
 
 					Message msg = new Message(process.processId, MessageType.ACK, " ");
+					System.out.println("Sending Acknowledgment.");
 					Process.waitTillDelay();
 					Process.config.logger.info("Sending Acknowledgment.");
 					process.controller.sendMsg(process.coordinatorNumber, msg.toString());
@@ -144,6 +150,7 @@ public class Transaction implements Runnable {
 					stateRequestResponseReceived = true;
 					process.dtLog.write(TransactionState.COMMIT, command);
 					state = TransactionState.COMMIT;
+					System.out.println("Transaction Committed.");
 					Process.config.logger.info("Transaction Committed.");
 					process.notifyTransactionComplete();
 					break; // STOP THE LOOP

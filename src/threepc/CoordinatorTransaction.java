@@ -75,6 +75,8 @@ public class CoordinatorTransaction extends Transaction {
 					processWaitSet.remove(message.process_id);
 					positiveResponseSet.add(message.process_id);
 					if (processWaitSet.size() == 0) {
+						System.out.println("Successfully got all the YES replies.");
+						
 						Process.config.logger.info("Successfully got all the YES replies.");
 					}
 				} else if (message.type == MessageType.NO) {
@@ -102,6 +104,7 @@ public class CoordinatorTransaction extends Transaction {
 					Process.config.logger.info("Received Yes from all the processes");
 					Process.waitTillDelay();
 					Process.config.logger.info("Sending PRE_COMMIT to all the processes.");
+					System.out.println("Sending PRE_COMMIT to processes.");
 					
 					int partial_count = -1;
 					if (!System.getProperty("PartialPreCommit").equals("-1")) {
@@ -111,6 +114,7 @@ public class CoordinatorTransaction extends Transaction {
 					
 					// Update your state to waiting for all the decisions to arrive.
 					state = TransactionState.WAIT_ACK;
+					System.out.println("Waiting for ACK");
 					
 					// Timeout if all the process don't reply back with a Yes or No.
 					Thread th = new Thread() {
@@ -147,6 +151,8 @@ public class CoordinatorTransaction extends Transaction {
 				process.dtLog.write(TransactionState.COMMIT, command);
 				state = TransactionState.COMMIT;
 				Process.config.logger.info("Acknowledgments have been received.");
+				System.out.println("Acknowledgments have been received.");
+
 				process.notifyTransactionComplete();
 				Process.waitTillDelay();
 				Process.config.logger.info("Sending COMMIT message to processes from which received ACK.");
