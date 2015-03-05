@@ -33,6 +33,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 	}
 
 	public void run() {
+		System.out.println("Starting RecoveryCoordTransaction");
 		lock.lock();
 
 		while (!isRecoveryComplete) {
@@ -42,6 +43,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 				Message msg = new Message(process.processId, MessageType.STATE_REQ, command);
 				Process.waitTillDelay();
 				Process.config.logger.info("Sending: " + msg);
+				System.out.println("Sending state request");
 				process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), -1);
 
 				Thread th = new Thread() {
@@ -71,6 +73,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 			else if (recoveryState == TransactionState.WAIT_DECISION) {
 				if (message.type == MessageType.STATE_VALUE) {
 					Process.config.logger.info("Recieved: " + message.toString());
+					System.out.println("Received "+message.toString());
 					if (message.payLoad.equals(TransactionState.COMMIT.toString())) {
 						commitFlag = true;
 					} else if (message.payLoad.equals(TransactionState.ABORT.toString())) {
@@ -102,6 +105,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 					Process.waitTillDelay();
 					isRecoveryComplete = true;
 					Message msg = new Message(process.processId,MessageType.COMMIT, command);
+					System.out.println("Sending COMMIT to all the active processes.");
 					Process.config.logger.info("Sending COMMIT to all the active processes.");
 
 					int partial_count = -1;
@@ -121,6 +125,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 					isRecoveryComplete = true;
 					Message msg = new Message(process.processId, MessageType.ABORT, command);
 					Process.config.logger.info("Sending ABORT to all the active processes.");
+					System.out.println("Sending ABORT to all the active processes.");
 					process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), -1);
 					break;
 				} else if (committableSet.size() == 0) {
@@ -131,6 +136,7 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 					isRecoveryComplete = true;
 					Message msg = new Message(process.processId, MessageType.ABORT, command);
 					Process.config.logger.info("Sending ABORT to all the active processes.");
+					System.out.println("Sending ABORT to all the active processes.");
 					process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), -1);
 					process.notifyTransactionComplete();
 					break;
