@@ -102,34 +102,43 @@ public class DTLog {
 	
 	// Read DTLogger.
 	public String getLoggedCommand(int process_id) {
-		String[] msg_splits = readLastLogCommand(process_id).split(Log_SEPARATOR);
-		String command = msg_splits[3]; 
+		String lastCommand = readLastLogCommand(process_id);
+		if(lastCommand != null) {
+			String[] msg_splits = lastCommand.split(Log_SEPARATOR);
+			return msg_splits[3]; 
+		}
 		
-		return command;
+		return null;
 	}
 
 
 	public TransactionState getLoggedState(int process_id) {
-		String[] msg_splits = readLastLogCommand(process_id).split(Log_SEPARATOR);
-		String msg = msg_splits[2];
-		
-		if (msg != null) {
-			if (msg.equals(TransactionState.STARTING.toString())) {
-				return TransactionState.STARTING;
-			} else if (msg.equals(TransactionState.UNCERTAIN.toString())) {
-				return TransactionState.UNCERTAIN;
-			} else if (msg.equals(TransactionState.ABORT.toString())) {
-				return TransactionState.ABORT;
-			} else if (msg.equals(TransactionState.COMMIT.toString())) {
-				return TransactionState.COMMIT;
+		String lastCommand = readLastLogCommand(process_id);
+		if (lastCommand != null) {
+			String[] msg_splits = lastCommand.split(Log_SEPARATOR);
+			String msg = msg_splits[2];
+
+			if (msg != null) {
+				if (msg.equals(TransactionState.STARTING.toString())) {
+					return TransactionState.STARTING;
+				} else if (msg.equals(TransactionState.UNCERTAIN.toString())) {
+					return TransactionState.UNCERTAIN;
+				} else if (msg.equals(TransactionState.ABORT.toString())) {
+					return TransactionState.ABORT;
+				} else if (msg.equals(TransactionState.COMMIT.toString())) {
+					return TransactionState.COMMIT;
+				}
 			}
 		}
-
 		return null;
 	}
 
 	public Set<Integer> getLastUpProcessSet(int process_id) {
-
+		String lastCommand = readLastLogCommand(process_id);
+		if (lastCommand == null) {
+			return new TreeSet<Integer>();
+		}
+		
 		String[] msg_splits = readLastLogCommand(process_id).split(Log_SEPARATOR);
 		String upProcess_str = msg_splits[1];
 
