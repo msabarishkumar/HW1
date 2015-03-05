@@ -96,7 +96,7 @@ public class Process {
 	
 		this.playlist = PlaylistLog.readStateFile(this);
 		
-		String deathAfterString = System.getProperty("DeathAfter");
+		String deathAfterString = System.getProperty("DEATH_AFTER");
 		Integer message_count = Integer.parseInt(deathAfterString.split("=")[0]);
 		Integer process_number = Integer.parseInt(deathAfterString.split("=")[1]);
 		dieAfter.add(process_number); dieAfter.add(message_count);

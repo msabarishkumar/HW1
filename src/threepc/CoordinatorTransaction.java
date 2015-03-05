@@ -36,6 +36,8 @@ public class CoordinatorTransaction extends Transaction {
 		while((state != TransactionState.COMMIT && state != TransactionState.ABORT) || processWaitSet.size() > 0) {
 			
 			if(state == TransactionState.STARTING) {
+				System.out.println(TransactionState.UNCERTAIN);
+				
 				process.dtLog.write(TransactionState.UNCERTAIN, command);
 				state = TransactionState.WAIT_DECISION;
 				

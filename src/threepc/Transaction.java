@@ -168,6 +168,10 @@ public class Transaction implements Runnable {
 		Integer[] keys = (Integer[]) process.upProcess.keySet().toArray(new Integer[0]);
 		Arrays.sort(keys);
 
+		if(keys.length == 0) {
+			return ;
+		}
+		
 		if (keys[0] > process.processId) {
 			keys[0] = process.processId;
 		}
