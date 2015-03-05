@@ -143,6 +143,9 @@ public class RecoveryCoordinatorTransaction extends Transaction {
 					Process.config.logger.info("Sending PRE_COMMIT to uncertain processes.");
 
 					int partial_count = -1;
+					if (!System.getProperty("PartialPreCommit").equals("-1")) {
+						partial_count = Integer.parseInt(System.getProperty("PartialPreCommit"));
+					}
 					process.controller.sendMsgs(uncertainSet, msg.toString(), partial_count);
 
 					Thread th = new Thread() {
