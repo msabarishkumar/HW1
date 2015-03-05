@@ -121,15 +121,16 @@ public class DTLog {
 			if (msg != null) {
 				if (msg.equals(TransactionState.STARTING.toString())) {
 					return TransactionState.STARTING;
-				} else if (msg.equals(TransactionState.UNCERTAIN.toString())) {
-					return TransactionState.UNCERTAIN;
 				} else if (msg.equals(TransactionState.ABORT.toString())) {
 					return TransactionState.ABORT;
 				} else if (msg.equals(TransactionState.COMMIT.toString())) {
 					return TransactionState.COMMIT;
+				} else if (msg.equals(TransactionState.UNCERTAIN.toString())) {
+					return TransactionState.UNCERTAIN;
 				}
 			}
 		}
+		
 		return null;
 	}
 

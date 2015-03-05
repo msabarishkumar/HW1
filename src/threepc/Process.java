@@ -136,7 +136,9 @@ public class Process {
 							controller.sendMsg(processId, msg.toString());
 						} else if (s.startsWith("EXIT")) {	
 							upProcess.remove(processId);
-							dtLog.write(currentTransaction.getState(), currentTransaction.command);
+							if(currentTransaction != null) {
+								dtLog.write(currentTransaction.getState(), currentTransaction.command);
+							}
 							System.exit(1);
 						} else if (s.startsWith("PRINTLOG")){
 							if (currentTransaction == null) {
