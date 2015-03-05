@@ -27,13 +27,9 @@ public class Playlist {
 	}
 
 	public void editSong(String song, String newSong, String url) {
-		if (songToURLMap.containsKey(song)) {
-			songToURLMap.put(song, url);
-		} else {
-			String oldUrl = songToURLMap.get(song);
-			songToURLMap.remove(song);
-			songToURLMap.put(newSong, oldUrl);
-		}
+		String oldUrl = songToURLMap.get(song);
+		songToURLMap.remove(song);
+		songToURLMap.put(newSong, oldUrl);
 	}
 
 	public Map<String, String> clone() {
