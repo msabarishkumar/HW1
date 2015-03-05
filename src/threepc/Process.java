@@ -490,7 +490,7 @@ public class Process {
 				playlist.removeSong(currentTransaction.command.trim());	
 			} else {
 				String[] str = currentTransaction.command.split("=");
-				if(str.length == 3) {
+				if(str.length != 3) {
 					playlist.addSong(str[0], str[1]);
 				} else {
 					playlist.editSong(str[0], str[1], str[2]);
