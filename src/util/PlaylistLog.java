@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
 
 import playlist.Playlist;
 import threepc.Process;
@@ -27,7 +28,7 @@ public class PlaylistLog {
 				FileOutputStream fos = new FileOutputStream(myFile);
 				ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-				oos.writeObject(process.playlist);
+				oos.writeObject(process.playlist.clone());
 				oos.close();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -45,7 +46,9 @@ public class PlaylistLog {
 			FileInputStream fos = new FileInputStream(myFile);
 			ObjectInputStream oos = new ObjectInputStream(fos);
 
-			temp = (Playlist) oos.readObject();
+			HashMap<String, String> tempMap = (HashMap<String, String>)  oos.readObject();
+			temp = new Playlist(tempMap);
+			
 			oos.close();
 		} catch (Exception e) {}
 		

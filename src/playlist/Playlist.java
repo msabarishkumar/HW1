@@ -6,6 +6,13 @@ import java.util.HashMap;
 public class Playlist {
 	private Map<String, String> songToURLMap = new HashMap<String, String>();
 
+	public Playlist() {
+	}
+	
+	public Playlist(Map<String, String> songToURLMap) {
+		this.songToURLMap = songToURLMap;
+	}
+	
 	public boolean containsKey(String key) {
 		return songToURLMap.containsKey(key.trim());
 	}
