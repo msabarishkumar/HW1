@@ -123,7 +123,9 @@ public class RecoveryTransaction extends Transaction {
 					String payload = message.payLoad.substring(1, message.payLoad.length() - 1);
 					String[] payload_split = payload.split(DTLog.UpSet_SEPARATOR);
 					for(String proc_no: payload_split){
-						upProcessSetRecived.add(Integer.parseInt(proc_no));
+						if(!proc_no.trim().isEmpty()){
+							upProcessSetRecived.add(Integer.parseInt(proc_no));
+						}
 		   		    }
 					
 					allUpSets.put(message.process_id, upProcessSetRecived);
