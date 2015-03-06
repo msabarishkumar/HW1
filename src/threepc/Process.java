@@ -56,6 +56,7 @@ public class Process {
 	
 	// Die after information.
 	List<Integer> dieAfter = new ArrayList<Integer>();
+	ProcessKiller processKiller;
 	
 	// Send Partial commit messages to only a few process.
 	List<Integer> partialCommit = new ArrayList<Integer>();
@@ -100,10 +101,13 @@ public class Process {
 		Integer message_count = Integer.parseInt(deathAfterString.split("=")[0]);
 		Integer process_number = Integer.parseInt(deathAfterString.split("=")[1]);
 		dieAfter.add(process_number); dieAfter.add(message_count);
+		String failpath = System.getProperty("FAIL_PATH");
+		processKiller = new ProcessKiller(failpath,processId);
 	}
 	
 	public static void main(String[] args) {
 		Process proc = new Process(Integer.parseInt(args[0]));
+		System.out.println("  Process "+proc.processId);
 		
 		proc.pumpHeartBeat();
 		

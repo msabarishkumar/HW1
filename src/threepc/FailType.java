@@ -8,10 +8,11 @@ public enum FailType {
 		// descriptors: sender's number AND MessageType AND number of messages delivered
 	BEFORE_SEND,      
 		// descriptors: receiver's number AND MessageType AND number of messages sent
-	AFTER_SEND,       // fail after sending a message
-		// descriptors: receiver's number AND MessageType AND number of messages sent
-	BEGINNING_STATE,  // fails as soon as current state starts
+		// AND list of messages to send
+	PARTIAL_BROADCAST,
+		// descriptors: processes to send to AND MessageType AND number of broadcasts sent
+	ENDING_STATE,  // fail immediately before writing new state to DTlog
 		// descriptors: TransactionState AND number of times in this state
-	ENDING_STATE,     // fails at end of given state
+	BEGINNING_STATE,     // fail immediately after writing new state to DTlog
 		// descriptors: TransactionState AND number of times in this state
 }
