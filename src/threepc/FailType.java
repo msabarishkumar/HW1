@@ -6,7 +6,10 @@ public enum FailType {
 		// descriptors: sender's number AND target number of messages (of this type) delivered
 	AFTER_DELIVER,    // fail immediately after delivering certain message
 		// descriptors: sender's number AND MessageType AND number of messages delivered
-	BEFORE_SEND,      
+	BEFORE_SEND,      //individual sends only
+		// descriptors: receiver's number AND MessageType AND number of messages sent
+		// AND list of messages to send
+	AFTER_SEND,
 		// descriptors: receiver's number AND MessageType AND number of messages sent
 		// AND list of messages to send
 	PARTIAL_BROADCAST,

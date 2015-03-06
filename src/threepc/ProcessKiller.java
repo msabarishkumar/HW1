@@ -9,8 +9,9 @@ import java.util.Set;
 public class ProcessKiller {
 	
 	/// for testing purposes
+	/*
 	public static void main(String[] args){
-		String file = "/home/motro/Documents/Classes/DistComp/HW1/src/fail0";
+		String file = "/home/motro/Documents/Classes/DistComp/HW1/failfiles/failCoordOnly";
 		
 			ProcessKiller fc = new ProcessKiller(file, 0);
 			if(fc.failType != null){
@@ -25,7 +26,14 @@ public class ProcessKiller {
 			System.out.println("counter is " + fc.maxCount);
 			System.out.println("target process is "+ fc.targetProcess);
 			
-	}
+			Set<Integer> fds = new HashSet<Integer>();
+			for(int i = 0; i < 4; i++){
+				fds.add(i);
+			}
+			System.out.println(fc.check(FailType.PARTIAL_BROADCAST,MessageType.ACK,fds));
+			System.out.println(fc.check(FailType.PARTIAL_BROADCAST,MessageType.COMMIT,fds));
+			System.out.println(fc.check(FailType.PARTIAL_BROADCAST,MessageType.COMMIT,fds));
+	} */
 	
 	private FailType failType;
 	private int maxCount;
@@ -70,8 +78,13 @@ public class ProcessKiller {
 			}
 			String stringOfProcs = prop.getProperty("include"+procNum);
 			String[] listOfProcs = stringOfProcs.split(",");
-			for (String thisProcess: listOfProcs){
-				procsToInclude.add(Integer.parseInt(thisProcess));
+			if(listOfProcs.length > 0){
+				procsToInclude = new HashSet<Integer>();
+				for (String thisProcess: listOfProcs){
+					if(!thisProcess.equals("")){
+						procsToInclude.add(Integer.parseInt(thisProcess));
+					}
+				}
 			}
 		}
 		
@@ -115,7 +128,7 @@ public class ProcessKiller {
 				}
 				break;
 			default:
-				System.out.println("Error! Transaction state input for unrelated failure case.");
+				System.out.println("PKiller: arguments for check don't match fail type "+ft);
 		}
 		return false;
 	}
@@ -129,43 +142,48 @@ public class ProcessKiller {
 			case BEFORE_DELIVER:
 			case AFTER_DELIVER:
 			case BEFORE_SEND:
-				if((messageType == null) || (messageType == message)){
+			case AFTER_SEND:
+				if(((messageType == null)&&(message != MessageType.HEARTBEAT)) || (messageType == message)){
 					if ((targetProcess < 0 ) || (targetProcess == process)){
 						return trigger();
 					}
 				}
 				break;
 			default:
-				System.out.println("Error! Message input for unrelated failure case.");
+				System.out.println("PKiller: arguments for check don't match fail type "+ft);
 		}
 		return false;
 	}
 	
 	//returns null if death not desired, full if death desired but no processes specified
-	//and some processes if those ones are specified in the fail file
-	public Set<Integer> broadcastCheck(MessageType message, Set<Integer> allRecipients){
-		Set<Integer> procsToReturn = new HashSet<Integer>();
+	//and only some processes if those ones are specified in the fail file
+	public Set<Integer> check(FailType ft, MessageType message, Set<Integer> allRecipients){
+		if(ft != FailType.PARTIAL_BROADCAST){
+			System.out.println("PKiller: arguments for check don't match fail type "+ft);
+		}
+		Set<Integer> procsToReturn = null;
 		if (failType == FailType.PARTIAL_BROADCAST){
 			if((messageType == null) || (messageType == message)){
 				if(trigger()){
+					procsToReturn = new HashSet<Integer>();
 					for(Integer thisProcess : allRecipients){
-						if((procsToInclude.size() == 0) || (procsToInclude.contains(thisProcess))){
+						if((procsToInclude == null) || (procsToInclude.contains(thisProcess))){
 							procsToReturn.add(thisProcess);
 						}
 					}
 				}
 			}
 		}
-		if(procsToReturn.size() == 0){
-			return null;
-		}
 		return procsToReturn;
 	}
 	
-	private boolean trigger(){
+	private synchronized boolean trigger(){
 		counter++;
 		if (counter == maxCount){
-			counter++;
+			return true;
+		}
+		if(counter > maxCount){
+			System.out.println("PKiller: counter too high, should have died before");
 			return true;
 		}
 		return false;

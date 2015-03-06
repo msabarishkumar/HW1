@@ -54,7 +54,7 @@ public class Transaction implements Runnable {
 		while (state != TransactionState.COMMIT && state != TransactionState.ABORT) {
 
 			if (state == TransactionState.STARTING) {
-				dieIfNMessagesReceived();
+				///dieIfNMessagesReceived();
 				
 				process.dtLog.write(TransactionState.STARTING, command);
 				System.out.println("Starting the transaction");
@@ -70,7 +70,7 @@ public class Transaction implements Runnable {
 						Message msg = new Message(process.processId, MessageType.NO, " ");
 						Process.waitTillDelay();
 						Process.config.logger.info("Sending No.");
-						process.controller.sendMsg(process.coordinatorNumber, msg.toString());
+						sendMsg(process.coordinatorNumber, msg);
 					}
 					break;
 				} else {
@@ -82,7 +82,7 @@ public class Transaction implements Runnable {
 					Process.waitTillDelay();
 					Process.config.logger.info("Sending Yes.");
 					System.out.println("Sending Yes");
-					process.controller.sendMsg(process.coordinatorNumber, msg.toString());
+					sendMsg(process.coordinatorNumber, msg);
 					Process.config.logger.info("Waiting to receive either PRE_COMMIT or ABORT.");
 
 					// Timeout if coordinator doesn't say anything.
@@ -122,7 +122,7 @@ public class Transaction implements Runnable {
 					System.out.println("Sending Acknowledgment.");
 					Process.waitTillDelay();
 					Process.config.logger.info("Sending Acknowledgment.");
-					process.controller.sendMsg(process.coordinatorNumber, msg.toString());
+					sendMsg(process.coordinatorNumber, msg);
 
 					Thread th = new Thread() {
 						public void run() {
@@ -200,7 +200,7 @@ public class Transaction implements Runnable {
 		Message msg = new Message(process.processId, MessageType.UR_SELECTED, command);
 		Process.waitTillDelay();
 		Process.config.logger.info("Sending: " + msg + " to: " + keys[0]);
-		process.controller.sendMsg(keys[0], msg.toString());
+		sendMsg(keys[0], msg);
 
 		// If I am not the elected coordinator then update the new coordinator
 		// number.
@@ -240,7 +240,7 @@ public class Transaction implements Runnable {
 	public void update(Message message) {
 		lock.lock();
 
-		dieIfNMessagesReceived();
+		///dieIfNMessagesReceived();
 
 		this.message = message;
 		if (message.type == MessageType.STATE_REQ) {
@@ -255,7 +255,7 @@ public class Transaction implements Runnable {
 			Message response = new Message(process.processId, MessageType.STATE_VALUE, state.toString());
 			Process.config.logger.info("Sending: " + response.toString());
 			stateRequestResponseReceived = false;
-			process.controller.sendMsg(message.process_id, response.toString());
+			sendMsg(message.process_id, response);
 
 			if (state == TransactionState.UNCERTAIN	|| state == TransactionState.COMMITABLE) {
 				Thread th = new Thread() {
@@ -282,7 +282,19 @@ public class Transaction implements Runnable {
 
 		lock.unlock();
 	}
+	
+	private void sendMsg(int toWho, Message msg){
+		if(process.processKiller.check(FailType.BEFORE_SEND, msg.type, toWho)){
+			process.die();
+		}
+		process.controller.sendMsg(toWho, msg.toString());
+		
+		if(process.processKiller.check(FailType.AFTER_SEND, msg.type, toWho)){
+			process.die();
+		}
+	}
 
+	
 	protected void dieIfNMessagesReceived() {
 		if(process.dieAfter.size() < 2) {
 			return ;
@@ -300,7 +312,7 @@ public class Transaction implements Runnable {
 			}
 			process.dieAfter.set(1, numMsg);
 		}
-	}
+	} 
 	
 	public String getUpStates() {
 		return "";

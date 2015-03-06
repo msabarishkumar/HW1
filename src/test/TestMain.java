@@ -52,12 +52,12 @@ if (!directory.substring(directory.length() - 4).equals("/HW1")){
 	directory = directory + "/HW1";
 }
 System.out.println(directory);
-//File thisLocation = new File ( combined );
 System.setProperty("CONFIG_PATH",directory + "/src/config0");
 System.setProperty("DELAY","1000");
 System.setProperty("LOG_FOLDER",directory + "/log");
 System.setProperty("DeathAfter","2=2");
 System.setProperty("PartialPreCommit", "-1");
 System.setProperty("PartialCommit", "-1");
+System.setProperty("FAIL_PATH",directory + "/failfiles/nofail");
 
 */

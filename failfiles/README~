@@ -1,0 +1,19 @@
+without any instructions, a processor will not fail
+
+specify a particular type of failure (see FailTypes enums) by calling
+failX=FailType.YYY
+where X is the processor number and YYY is the type
+
+counterX=Y
+specifies the number of particular instances until the process actually fails.  default = 1
+ 
+messageX=MessageType.YYY
+default = every message (except heartbeat) counts to the overall failure
+
+includeX=A,B,C
+for the PARTIAL_BROADCAST failure only, designates which processes to send to before failing
+default = send to all processes, then fail
+if you want it to send to nothing then fail, specify an empty one: includeX=
+
+stateX=TransactionState.YYY
+not yet implemented in Process

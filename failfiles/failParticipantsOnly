@@ -1,0 +1,4 @@
+fail1=AFTER_DELIVER
+message1=PRE_COMMIT
+fail2=BEFORE_DELIVER
+message2=COMMIT

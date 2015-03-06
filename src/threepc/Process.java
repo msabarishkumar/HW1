@@ -74,6 +74,23 @@ public class Process {
 	boolean hasCoordinatorBeenSelected = false;
 	
 	Process(int processId) {
+		
+		String directory = System.getProperty("user.dir");
+		if (directory.substring(directory.length() - 4).equals("/bin")){
+			directory = directory.substring(0,directory.length() - 4);
+		}
+		if (!directory.substring(directory.length() - 4).equals("/HW1")){
+			directory = directory + "/HW1";
+		}
+		System.out.println(directory);
+		System.setProperty("CONFIG_PATH",directory + "/src/config");
+		System.setProperty("DELAY","2000");
+		System.setProperty("LOG_FOLDER",directory + "/log");
+		System.setProperty("DeathAfter","2=2");
+		System.setProperty("PartialPreCommit", "-1");
+		System.setProperty("PartialCommit", "-1");
+		System.setProperty("FAIL_PATH",directory + "/failfiles/failCoordOnly");
+		
 		this.configPath = System.getProperty("CONFIG_PATH");
 		this.processId = processId;
 		this.upProcess = new HashMap<Integer, Long>();
@@ -97,10 +114,10 @@ public class Process {
 	
 		this.playlist = PlaylistLog.readStateFile(this);
 		
-		String deathAfterString = System.getProperty("DEATH_AFTER");
-		Integer message_count = Integer.parseInt(deathAfterString.split("=")[0]);
-		Integer process_number = Integer.parseInt(deathAfterString.split("=")[1]);
-		dieAfter.add(process_number); dieAfter.add(message_count);
+		//String deathAfterString = System.getProperty("DEATH_AFTER");
+		//Integer message_count = Integer.parseInt(deathAfterString.split("=")[0]);
+		//Integer process_number = Integer.parseInt(deathAfterString.split("=")[1]);
+		//dieAfter.add(process_number); dieAfter.add(message_count);
 		String failpath = System.getProperty("FAIL_PATH");
 		processKiller = new ProcessKiller(failpath,processId);
 	}
@@ -243,6 +260,10 @@ public class Process {
 					String msg = queue.poll();
 					Message message = Message.parseMsg(msg);
 
+					if(processKiller.check(FailType.BEFORE_DELIVER,message.type,message.process_id)){
+						die();
+					}
+					
 					switch (message.type) {
 					
 					case HEARTBEAT: {
@@ -431,6 +452,9 @@ public class Process {
 						}
 					}
 					}
+					if(processKiller.check(FailType.AFTER_DELIVER,message.type,message.process_id)){
+						die();
+					}	
 				}
 			}
 		};
@@ -551,5 +575,11 @@ public class Process {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void die(){
+		Process.config.logger.warning("Killing  myself");
+		System.out.println("dead");
+		System.exit(1);
 	}
 }

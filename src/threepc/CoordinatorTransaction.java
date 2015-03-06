@@ -47,7 +47,7 @@ public class CoordinatorTransaction extends Transaction {
 				Process.config.logger.info("Received: " + message.toString());
 				Process.waitTillDelay();
 				Process.config.logger.info("Sending VOTE_REQs.");
-				process.controller.sendMsgs(processWaitSet, msg.toString(), -1);
+				sendMsgs(processWaitSet, msg);
 				
 				// Timeout if all the process don't reply back with a Yes or No.
 				Thread th = new Thread() {
@@ -106,11 +106,12 @@ public class CoordinatorTransaction extends Transaction {
 					Process.config.logger.info("Sending PRE_COMMIT to all the processes.");
 					System.out.println("Sending PRE_COMMIT to processes.");
 					
-					int partial_count = -1;
-					if (!System.getProperty("PartialPreCommit").equals("-1")) {
-						partial_count = Integer.parseInt(System.getProperty("PartialPreCommit"));
-					}
-					process.controller.sendMsgs(processWaitSet, msg.toString(), partial_count);
+					//int partial_count = -1;
+					//if (!System.getProperty("PartialPreCommit").equals("-1")) {
+					//	partial_count = Integer.parseInt(System.getProperty("PartialPreCommit"));
+					//}
+					//process.controller.sendMsgs(processWaitSet, msg.toString(), partial_count);
+					sendMsgs(processWaitSet, msg);
 					
 					// Update your state to waiting for all the decisions to arrive.
 					state = TransactionState.WAIT_ACK;
@@ -157,11 +158,12 @@ public class CoordinatorTransaction extends Transaction {
 				Process.waitTillDelay();
 				Process.config.logger.info("Sending COMMIT message to processes from which received ACK.");
 				
-				int partial_count = -1;
-				if (!System.getProperty("PartialCommit").equals("-1")) {
-					partial_count = Integer.parseInt(System.getProperty("PartialCommit"));
-				}
-				process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), partial_count);
+				//int partial_count = -1;
+				//if (!System.getProperty("PartialCommit").equals("-1")) {
+				//	partial_count = Integer.parseInt(System.getProperty("PartialCommit"));
+				//}
+				//process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), partial_count);
+				sendMsgs(process.upProcess.keySet(), msg);
 				positiveResponseSet.clear();
 				processWaitSet.clear();
 			}
@@ -178,7 +180,7 @@ public class CoordinatorTransaction extends Transaction {
 	public void update(Message message) {
 		lock.lock();
 		
-		dieIfNMessagesReceived();
+		//dieIfNMessagesReceived();
 
 		this.message = message;
 		nextMessageArrived.signal();
@@ -194,9 +196,21 @@ public class CoordinatorTransaction extends Transaction {
 		Message msg = new Message(process.processId, MessageType.ABORT, command);
 		Process.waitTillDelay();
 		Process.config.logger.info("Sending Abort messages to all the process.");
-		process.controller.sendMsgs(process.upProcess.keySet(), msg.toString(), -1);
+		sendMsgs(process.upProcess.keySet(), msg);
 		
 		processWaitSet.clear();
 		positiveResponseSet.clear();
 	}
+	
+	private void sendMsgs(Set<Integer> processes, Message msg) {
+		Set<Integer> selectedProcesses = process.processKiller.check(FailType.PARTIAL_BROADCAST, msg.type, processes);
+		if(selectedProcesses == null){
+			process.controller.sendMsgs(processes, msg.toString(), -1);
+		}
+		else{
+			process.controller.sendMsgs(selectedProcesses, msg.toString(), -1);
+			process.die();
+		}
+	}
+	
 }
